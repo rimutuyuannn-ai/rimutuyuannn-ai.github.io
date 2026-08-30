@@ -845,6 +845,13 @@ document.getElementById("dailyMixLink").addEventListener("click", e => {
   e.preventDefault();
   tuneTo("今日配方 · 调谐中", e.currentTarget.href);
 });
+
+// 后退（bfcache 还原）时清掉换频遮罩、恢复渲染——否则会永远停在"调谐中"
+window.addEventListener("pageshow", () => {
+  tunefx.classList.remove("on");
+  tuning = false;
+  startLoop();
+});
 </script>
 </body>
 </html>
