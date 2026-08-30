@@ -477,7 +477,7 @@ nebulaCv.width = 1600; nebulaCv.height = 1000;
     { x: 0.56, y: 0.14, r: 300, c: "108,92,148" },   // 紫，最浅
   ]) {
     const grad = g.createRadialGradient(b.x * 1600, b.y * 1000, 0, b.x * 1600, b.y * 1000, b.r);
-    grad.addColorStop(0, `rgba(${b.c},0.055)`);
+    grad.addColorStop(0, `rgba(${b.c},0.07)`);
     grad.addColorStop(1, `rgba(${b.c},0)`);
     g.fillStyle = grad;
     g.fillRect(0, 0, 1600, 1000);
@@ -515,10 +515,37 @@ const stars = [];
     sp: cfg.s0 + Math.random() * cfg.s1,
     ph: Math.random() * 6.28, big: cfg.big || 0,
   }); };
-  push(95, { r0: 0.5, r1: 0.9, b0: 0.14, b1: 0.28, a0: 0.08, a1: 0.18, s0: 0.4, s1: 1.2 });
-  push(32, { r0: 1.0, r1: 0.8, b0: 0.28, b1: 0.28, a0: 0.14, a1: 0.22, s0: 0.5, s1: 1.4 });
-  push(11, { r0: 1.7, r1: 1.1, b0: 0.48, b1: 0.22, a0: 0.20, a1: 0.28, s0: 0.8, s1: 1.8, big: 1 });
+  push(200, { r0: 0.6, r1: 1.0, b0: 0.26, b1: 0.36, a0: 0.14, a1: 0.24, s0: 0.4, s1: 1.2 });
+  push(70, { r0: 1.1, r1: 0.9, b0: 0.46, b1: 0.30, a0: 0.18, a1: 0.26, s0: 0.5, s1: 1.4 });
+  push(16, { r0: 1.8, r1: 1.2, b0: 0.66, b1: 0.24, a0: 0.26, a1: 0.32, s0: 0.8, s1: 1.8, big: 1 });
 })();
+
+// 星官：按天球相对位置简化的射手座（茶壶）与室女座（Y 字）
+const CONSTELLATIONS = [
+  { box: [0.09, 0.10, 0.27, 0.36],   // 左上：射手座
+    stars: [
+      { x: 0.02, y: 0.55, r: 2.0 },  // γ 壶嘴
+      { x: 0.28, y: 0.38, r: 2.2 },  // δ
+      { x: 0.34, y: 0.88, r: 2.5 },  // ε Kaus Australis
+      { x: 0.86, y: 0.62, r: 2.3 },  // ζ Ascella
+      { x: 0.42, y: 0.10, r: 2.0 },  // λ 壶盖
+      { x: 0.68, y: 0.34, r: 1.9 },  // φ
+      { x: 0.80, y: 0.20, r: 2.4 },  // σ Nunki
+      { x: 0.97, y: 0.46, r: 1.8 },  // τ
+    ],
+    lines: [[0,1],[1,2],[2,3],[3,7],[7,6],[6,5],[5,1],[1,4],[4,5]] },
+  { box: [0.66, 0.52, 0.26, 0.40],   // 右下：室女座
+    stars: [
+      { x: 0.00, y: 0.40, r: 1.9 },  // β
+      { x: 0.28, y: 0.53, r: 1.9 },  // η
+      { x: 0.45, y: 0.58, r: 2.2 },  // γ Porrima
+      { x: 0.55, y: 0.26, r: 2.0 },  // δ
+      { x: 0.62, y: 0.02, r: 2.1 },  // ε
+      { x: 0.85, y: 0.55, r: 2.0 },  // ζ
+      { x: 0.78, y: 0.98, r: 2.8 },  // α Spica
+    ],
+    lines: [[0,1],[1,2],[2,3],[3,4],[2,5],[5,6]] },
+];
 
 const meteors = [];
 let nextMeteor = 3, lastSkyT = 0;
@@ -540,11 +567,59 @@ function drawSky(t) {
       bgG.drawImage(flareSpr, st.x * w - sz / 2, st.y * h - sz / 2, sz, sz);
     } else {
       bgG.globalAlpha = a;
-      bgG.fillStyle = "#cfd9e8";
+      bgG.fillStyle = "#dde8f8";
       bgG.fillRect(st.x * w - st.r / 2, st.y * h - st.r / 2, st.r, st.r);
     }
   }
   bgG.globalAlpha = 1;
+  // 星官：连线细到近乎不存在，星子比野星更亮一点
+  for (const c of CONSTELLATIONS) {
+    const px = c.stars.map(st => [
+      (c.box[0] + st.x * c.box[2]) * w,
+      (c.box[1] + st.y * c.box[3]) * h,
+    ]);
+    bgG.strokeStyle = "rgba(178,200,238,0.10)";
+    bgG.lineWidth = 0.8;
+    bgG.beginPath();
+    for (const [a, b] of c.lines) {
+      bgG.moveTo(px[a][0], px[a][1]);
+      bgG.lineTo(px[b][0], px[b][1]);
+    }
+    bgG.stroke();
+    c.stars.forEach((st, k) => {
+      const tw = 0.78 + 0.18 * Math.sin(t * 0.7 + k * 1.9);
+      const sz = st.r * 10;
+      bgG.globalAlpha = tw;
+      bgG.drawImage(flareSpr, px[k][0] - sz / 2, px[k][1] - sz / 2, sz, sz);
+    });
+    bgG.globalAlpha = 1;
+  }
+  // 射手座壶嘴所指：银河中心（一抹斜向的乳白洗染）
+  const gcx = (CONSTELLATIONS[0].box[0] + 0.02 * CONSTELLATIONS[0].box[2]) * w,
+        gcy = (CONSTELLATIONS[0].box[1] + 0.55 * CONSTELLATIONS[0].box[3]) * h;
+  bgG.save();
+  bgG.translate(gcx, gcy);
+  bgG.rotate(-0.5);
+  bgG.scale(2.8, 1);
+  const gc = bgG.createRadialGradient(0, 0, 0, 0, 0, 150);
+  gc.addColorStop(0, "rgba(196,210,238,0.075)");
+  gc.addColorStop(1, "rgba(196,210,238,0)");
+  bgG.fillStyle = gc;
+  bgG.fillRect(-150, -150, 300, 300);
+  bgG.restore();
+  // 室女座 ε 上方：星系团的一粒微尘
+  const vcx = (CONSTELLATIONS[1].box[0] + 0.60 * CONSTELLATIONS[1].box[2]) * w,
+        vcy = (CONSTELLATIONS[1].box[1] - 0.04 * CONSTELLATIONS[1].box[3]) * h;
+  bgG.save();
+  bgG.translate(vcx, vcy);
+  bgG.rotate(0.4);
+  bgG.scale(2.1, 1);
+  const vc = bgG.createRadialGradient(0, 0, 0, 0, 0, 60);
+  vc.addColorStop(0, "rgba(150,140,185,0.055)");
+  vc.addColorStop(1, "rgba(150,140,185,0)");
+  bgG.fillStyle = vc;
+  bgG.fillRect(-60, -60, 120, 120);
+  bgG.restore();
   // 流星偶过
   if (!reduced) {
     nextMeteor -= dt;
