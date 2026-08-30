@@ -27,9 +27,10 @@
     overflow-x: hidden;
   }
 
-  /* 全屏粒子宇宙背景 */
+  /* 全屏粒子宇宙背景（替换元素必须显式宽高，inset:0 不会拉伸 canvas） */
   #universe {
     position: fixed; inset: 0; z-index: 0;
+    width: 100vw; height: 100vh;
     opacity: 0.55; pointer-events: none;
   }
   .vignette {
@@ -43,8 +44,7 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 18px 28px;
     border-bottom: 1px solid var(--line);
-    background: rgba(6, 8, 13, 0.55);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    background: rgba(7, 9, 14, 0.92);
     font-size: 12px; letter-spacing: 3px; color: var(--dim);
   }
   .topbar .brand { display: flex; align-items: center; gap: 10px; }
@@ -78,15 +78,14 @@
   }
   .hero p b { color: #c3cddd; font-weight: 500; }
 
-  /* 频道卡片 */
+  /* 频道卡片（不用 backdrop-filter：覆盖在动画画布上会让 GPU 每帧全屏重模糊） */
   .channels {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 22px;
   }
   .card {
     display: block; text-decoration: none; color: inherit;
-    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    background: rgba(11, 14, 22, 0.86); border: 1px solid var(--line); border-radius: 16px;
     overflow: hidden; position: relative;
-    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 8px 40px rgba(0,0,0,0.45);
     transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
   }
@@ -223,12 +222,13 @@
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function fitCanvas(cv) {
+function fitCanvas(cv, scale) {
+  const s = scale || dpr;
   const r = cv.getBoundingClientRect();
   const w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
-  if (cv.width !== w * dpr || cv.height !== h * dpr) {
-    cv.width = w * dpr; cv.height = h * dpr;
-    cv.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (cv.width !== Math.round(w * s) || cv.height !== Math.round(h * s)) {
+    cv.width = Math.round(w * s); cv.height = Math.round(h * s);
+    cv.getContext("2d").setTransform(s, 0, 0, s, 0, 0);
   }
   return { w, h };
 }
@@ -263,11 +263,14 @@ function createLife(cv, opts) {
     }
   }
 
-  const heads = new Int32Array(1 << 14), nxt = new Int32Array(o.count);
+  // 桶数组按需扩容：越界读写会把 undefined 带进链表遍历，造成死循环
+  let heads = new Int32Array(1024);
+  const nxt = new Int32Array(o.count);
 
   function step() {
     const cell = o.rMax;
     const cols = Math.max(1, Math.ceil(W / cell)), rows = Math.max(1, Math.ceil(H / cell));
+    if (heads.length < cols * rows) heads = new Int32Array(cols * rows);
     heads.fill(-1, 0, cols * rows);
     for (let i = 0; i < o.count; i++) {
       const cx = Math.min(cols - 1, Math.max(0, (t.x[i] / cell) | 0));
@@ -325,8 +328,8 @@ function createLife(cv, opts) {
   }
 
   return {
-    frame(g, glow) {
-      const { w, h } = fitCanvas(cv);
+    frame(g, glow, scale) {
+      const { w, h } = fitCanvas(cv, scale);
       const fresh = W !== w || H !== h;
       W = w; H = h;
       if (!t || fresh) init();
@@ -357,6 +360,7 @@ const universe = createLife(bgCanvas, {
   count: 150, species: 4, rMax: 110, force: 0.3, friction: 0.9,
   trail: 0.18, dotSize: 1.8, speedScale: 14,
   colors: ["#2e6f63", "#3a4f86", "#6d5a35", "#3a5570"],
+  bgScale: 1,   // 背景层用 1x 分辨率：它在暗处且被暗角覆盖，视觉无损但省 4 倍像素
 });
 
 /* ---------- CH·01 示波器 ---------- */
@@ -480,24 +484,47 @@ const lifeHover = { v: 0 };
 const nightHover = { v: 0 };
 const noiseHover = { v: 0 };
 
-/* ---------- 主循环 ---------- */
-let t0 = performance.now();
-function loop(now) {
+/* ---------- 主循环：30fps 上限 + 页面隐藏即暂停 ---------- */
+let t0 = performance.now(), lastFrame = 0, running = false;
+const FRAME_MIN = 1000 / 30;
+function renderAll(now) {
   const t = (now - t0) / 1000;
   nightHover.v += (glow.night - nightHover.v) * 0.08;
   lifeHover.v += (glow.life - lifeHover.v) * 0.08;
   noiseHover.v += (glow.noise - noiseHover.v) * 0.08;
-  universe.frame(bgG, 0);
+  universe.frame(bgG, 0, 1);
   drawScope(t, nightHover.v);
   minilife.frame(lifeG, lifeHover.v);
   drawBars(t, noiseHover.v);
+}
+function loop(now) {
+  if (!running) return;
+  if (now - lastFrame >= FRAME_MIN) {
+    lastFrame = now;
+    renderAll(now);
+  }
   if (!reduced) requestAnimationFrame(loop);
 }
-requestAnimationFrame(loop);
-if (reduced) { /* 静态单帧已绘制，尊重减弱动效偏好 */ }
+function startLoop() {
+  if (running || reduced) return;
+  running = true;
+  lastFrame = 0;
+  requestAnimationFrame(loop);
+}
+function stopLoop() { running = false; }
+document.addEventListener("visibilitychange", () => {
+  document.hidden ? stopLoop() : startLoop();
+});
+window.addEventListener("blur", stopLoop);
+window.addEventListener("focus", startLoop);
+if (reduced) {
+  renderAll(performance.now());   // 减弱动效偏好：只画一帧静态画面
+} else {
+  startLoop();
+}
 
 window.addEventListener("resize", () => {
-  universe.frame(bgG, 0);
+  universe.frame(bgG, 0, 1);
   minilife.frame(lifeG, 0);
 });
 </script>
