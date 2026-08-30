@@ -230,10 +230,11 @@
 
   <main>
     <section class="hero">
-      <div class="eyebrow">INDEX OF TRANSMISSIONS · <b>4 个频道在线</b> · 每日更新信号</div>
+      <div class="eyebrow">INDEX OF TRANSMISSIONS · <b>CH·01 — CH·04</b> · 长期播送</div>
       <h1>观 测 档 案</h1>
-      <p>在噪声里寻找<b>信号</b>，在方程里寻找<b>生命</b>。<br>
-      这里收录一些不可见世界的观测记录——它们都在运行中，随时可以调谐进入。</p>
+      <p>言语止步的地方，声音开始。<br>
+      粒子在此成为生命，噪声成为天气，轨道在暗中画圆。<br>
+      它们不解说，也不迎送——只是替我们，把说不出的部分，一直运行下去。</p>
     </section>
 
     <section class="daily" id="daily">
@@ -244,10 +245,10 @@
       <div class="body">
         <div class="head"><span class="beacon"></span>今日信号 · <b id="dailyDate">—</b></div>
         <p class="note" id="dailyNote">—</p>
-        <div class="mix">今日声学配方：<b id="dailyMix">—</b></div>
+        <div class="mix">今日空气：<b id="dailyMix">—</b></div>
         <div class="actions">
-          <a class="daily-btn primary" id="dailyLifeLink">观测今日宇宙 →</a>
-          <a class="daily-btn" id="dailyMixLink">收听今日配方 →</a>
+          <a class="daily-btn primary" id="dailyLifeLink">今日宇宙 →</a>
+          <a class="daily-btn" id="dailyMixLink">今日空气 →</a>
         </div>
       </div>
     </section>
@@ -261,8 +262,8 @@
         </div>
         <div class="info">
           <div class="ch"><b>CH·01</b>　NIGHT SIGNALS / 深夜短波</div>
-          <h2>不可能之地的收音机<span class="arrow">进入 →</span></h2>
-          <div class="desc">一台为不存在的地方准备的短波接收机。频谱、波段、深夜的静电噪声。</div>
+          <h2>来自不存在之地的广播<span class="arrow">进入 →</span></h2>
+          <div class="desc">在所有波段都已安静的深夜，仍有一些地方在播音。频谱上有风，有静电，有抵达不了的呼唤。</div>
         </div>
       </a>
 
@@ -274,8 +275,8 @@
         </div>
         <div class="info">
           <div class="ch"><b>CH·02</b>　粒命 / PARTICLE LIFE</div>
-          <h2>数字生命培养皿<span class="arrow">进入 →</span></h2>
-          <div class="desc">一张相生相克的基因图谱，1500 个粒子。细胞、蛇链与猎食者都会自己长出来。</div>
+          <h2>活着的最小单位<span class="arrow">进入 →</span></h2>
+          <div class="desc">一千五百个粒子，一张相生相克的谱。没有谁编写它们的行为——细胞、链与追逐，都是自己长出来的。</div>
         </div>
       </a>
 
@@ -287,8 +288,8 @@
         </div>
         <div class="info">
           <div class="ch"><b>CH·03</b>　静噪室 / NOISE ROOM</div>
-          <h2>白噪音调配台<span class="arrow">进入 →</span></h2>
-          <div class="desc">24 种本地合成的声源——从松山雨雾、雪落枫吟到引力波与星云圣咏，其中 20 个为观测站原创。</div>
+          <h2>二十四种安静<span class="arrow">进入 →</span></h2>
+          <div class="desc">从松山雨雾到星云圣咏，二十种声音只在此处存在。它们可以同时点亮——安静，也可以有层次。</div>
         </div>
       </a>
 
@@ -300,15 +301,15 @@
         </div>
         <div class="info">
           <div class="ch"><b>CH·04</b>　星图 / ORBIT GARDEN</div>
-          <h2>引力沙盒<span class="arrow">进入 →</span></h2>
-          <div class="desc">拖拽发射行星，绕恒星画出轨道彩带。共振、弹弓、双星——宇宙的规则只有引力一条。</div>
+          <h2>唯一的规则是引力<span class="arrow">进入 →</span></h2>
+          <div class="desc">抛出一颗行星，它便开始服从。轨道、共振、擦肩与坠落——宇宙从不指挥，只是允许。</div>
         </div>
       </a>
     </section>
   </main>
 
   <footer>
-    <div>© 2026 <a href="https://github.com/rimutuyuannn-ai" target="_blank" rel="noopener">rimutuyuannn-ai</a> · 观测进行中</div>
+    <div>© 2026 <a href="https://github.com/rimutuyuannn-ai" target="_blank" rel="noopener">rimutuyuannn-ai</a> · 观测仍在继续</div>
     <div class="sig" id="uptime">SIGNAL OK</div>
   </footer>
 </div>
@@ -844,7 +845,7 @@ document.getElementById("dailyLifeLink").addEventListener("click", e => {
 });
 document.getElementById("dailyMixLink").addEventListener("click", e => {
   e.preventDefault();
-  tuneTo("今日配方 · 调谐中", e.currentTarget.href);
+  tuneTo("今日空气 · 调谐中", e.currentTarget.href);
 });
 
 // 后退（bfcache 还原）时清掉换频遮罩、恢复渲染——否则会永远停在"调谐中"
