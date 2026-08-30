@@ -477,7 +477,7 @@ nebulaCv.width = 1600; nebulaCv.height = 1000;
     { x: 0.56, y: 0.14, r: 300, c: "108,92,148" },   // 紫，最浅
   ]) {
     const grad = g.createRadialGradient(b.x * 1600, b.y * 1000, 0, b.x * 1600, b.y * 1000, b.r);
-    grad.addColorStop(0, `rgba(${b.c},0.07)`);
+    grad.addColorStop(0, `rgba(${b.c},0.08)`);
     grad.addColorStop(1, `rgba(${b.c},0)`);
     g.fillStyle = grad;
     g.fillRect(0, 0, 1600, 1000);
@@ -515,9 +515,9 @@ const stars = [];
     sp: cfg.s0 + Math.random() * cfg.s1,
     ph: Math.random() * 6.28, big: cfg.big || 0,
   }); };
-  push(200, { r0: 0.6, r1: 1.0, b0: 0.26, b1: 0.36, a0: 0.14, a1: 0.24, s0: 0.4, s1: 1.2 });
-  push(70, { r0: 1.1, r1: 0.9, b0: 0.46, b1: 0.30, a0: 0.18, a1: 0.26, s0: 0.5, s1: 1.4 });
-  push(16, { r0: 1.8, r1: 1.2, b0: 0.66, b1: 0.24, a0: 0.26, a1: 0.32, s0: 0.8, s1: 1.8, big: 1 });
+  push(200, { r0: 0.7, r1: 1.1, b0: 0.42, b1: 0.38, a0: 0.18, a1: 0.28, s0: 0.4, s1: 1.2 });
+  push(70, { r0: 1.2, r1: 1.0, b0: 0.62, b1: 0.28, a0: 0.22, a1: 0.28, s0: 0.5, s1: 1.4 });
+  push(16, { r0: 2.0, r1: 1.4, b0: 0.82, b1: 0.18, a0: 0.28, a1: 0.32, s0: 0.8, s1: 1.8, big: 1 });
 })();
 
 // 星官：按天球相对位置简化的射手座（茶壶）与室女座（Y 字）
@@ -567,7 +567,7 @@ function drawSky(t) {
       bgG.drawImage(flareSpr, st.x * w - sz / 2, st.y * h - sz / 2, sz, sz);
     } else {
       bgG.globalAlpha = a;
-      bgG.fillStyle = "#dde8f8";
+      bgG.fillStyle = "#eaf2ff";
       bgG.fillRect(st.x * w - st.r / 2, st.y * h - st.r / 2, st.r, st.r);
     }
   }
@@ -578,8 +578,8 @@ function drawSky(t) {
       (c.box[0] + st.x * c.box[2]) * w,
       (c.box[1] + st.y * c.box[3]) * h,
     ]);
-    bgG.strokeStyle = "rgba(178,200,238,0.10)";
-    bgG.lineWidth = 0.8;
+    bgG.strokeStyle = "rgba(178,200,238,0.16)";
+    bgG.lineWidth = 0.9;
     bgG.beginPath();
     for (const [a, b] of c.lines) {
       bgG.moveTo(px[a][0], px[a][1]);
@@ -587,8 +587,8 @@ function drawSky(t) {
     }
     bgG.stroke();
     c.stars.forEach((st, k) => {
-      const tw = 0.78 + 0.18 * Math.sin(t * 0.7 + k * 1.9);
-      const sz = st.r * 10;
+      const tw = 0.88 + 0.12 * Math.sin(t * 0.7 + k * 1.9);
+      const sz = st.r * 12;
       bgG.globalAlpha = tw;
       bgG.drawImage(flareSpr, px[k][0] - sz / 2, px[k][1] - sz / 2, sz, sz);
     });
@@ -602,7 +602,7 @@ function drawSky(t) {
   bgG.rotate(-0.5);
   bgG.scale(2.8, 1);
   const gc = bgG.createRadialGradient(0, 0, 0, 0, 0, 150);
-  gc.addColorStop(0, "rgba(196,210,238,0.075)");
+  gc.addColorStop(0, "rgba(196,210,238,0.09)");
   gc.addColorStop(1, "rgba(196,210,238,0)");
   bgG.fillStyle = gc;
   bgG.fillRect(-150, -150, 300, 300);
