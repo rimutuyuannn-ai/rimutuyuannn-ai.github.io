@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="在噪声里寻找信号，在方程里寻找生命。Observations of invisible worlds.">
+<meta name="version" content="v3-watchdog">
 <title>观测站 · rimutuyuannn-ai</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
 <style>
@@ -484,21 +485,30 @@ const lifeHover = { v: 0 };
 const nightHover = { v: 0 };
 const noiseHover = { v: 0 };
 
-/* ---------- 主循环：30fps 上限 + 页面隐藏即暂停 ---------- */
+/* ---------- 主循环：30fps 上限 + 页面隐藏即暂停 + 停摆看门狗 ---------- */
 let t0 = performance.now(), lastFrame = 0, running = false;
+let lastTick = 0, stalls = 0, degraded = false;
 const FRAME_MIN = 1000 / 30;
 function renderAll(now) {
   const t = (now - t0) / 1000;
   nightHover.v += (glow.night - nightHover.v) * 0.08;
   lifeHover.v += (glow.life - lifeHover.v) * 0.08;
   noiseHover.v += (glow.noise - noiseHover.v) * 0.08;
-  universe.frame(bgG, 0, 1);
+  if (!degraded) universe.frame(bgG, 0, 1);
   drawScope(t, nightHover.v);
   minilife.frame(lifeG, lifeHover.v);
   drawBars(t, noiseHover.v);
 }
 function loop(now) {
   if (!running) return;
+  // 看门狗：连续多次 rAF 间隔超过 1.5s 说明渲染管线停摆，弃掉最重的全屏背景
+  if (lastTick && now - lastTick > 1500) {
+    if (++stalls >= 3 && !degraded) {
+      degraded = true;
+      bgCanvas.style.display = "none";
+    }
+  } else stalls = 0;
+  lastTick = now;
   if (now - lastFrame >= FRAME_MIN) {
     lastFrame = now;
     renderAll(now);
@@ -508,7 +518,7 @@ function loop(now) {
 function startLoop() {
   if (running || reduced) return;
   running = true;
-  lastFrame = 0;
+  lastFrame = 0; lastTick = 0; stalls = 0;
   requestAnimationFrame(loop);
 }
 function stopLoop() { running = false; }
