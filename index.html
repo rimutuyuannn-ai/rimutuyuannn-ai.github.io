@@ -66,6 +66,61 @@
     font-size: 12px; letter-spacing: 6px; color: var(--dim); margin-bottom: 18px;
   }
   .hero .eyebrow b { color: var(--accent); font-weight: 500; }
+
+  /* 今日信号 */
+  .daily {
+    display: flex; gap: 22px; align-items: stretch;
+    background: rgba(11, 14, 22, 0.88);
+    border: 1px solid rgba(111, 227, 196, 0.3); border-radius: 16px;
+    padding: 16px; margin-bottom: 44px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 0 30px rgba(111,227,196,0.05);
+  }
+  .daily .pane { position: relative; flex: none; width: 218px; border-radius: 10px; overflow: hidden; background: #05070c; }
+  .daily .pane canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .daily .pane .lab {
+    position: absolute; left: 10px; bottom: 8px;
+    font-size: 9px; letter-spacing: 2px; color: #7b8494; pointer-events: none;
+  }
+  .daily .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; padding: 4px 2px; }
+  .daily .head { display: flex; align-items: center; gap: 9px; font-size: 12px; letter-spacing: 3px; color: var(--dim); }
+  .daily .head b { color: var(--accent); font-weight: 500; letter-spacing: 1px; }
+  .daily .head .beacon { width: 7px; height: 7px; }
+  .daily .note {
+    font-family: "Songti SC", "Noto Serif SC", serif;
+    font-size: 19px; letter-spacing: 1px; color: #dfe5ee; line-height: 1.55;
+  }
+  .daily .mix { font-size: 12.5px; color: #8d97a9; letter-spacing: 1px; }
+  .daily .mix b { color: #c3cddd; font-weight: 500; }
+  .daily .actions { display: flex; gap: 10px; margin-top: auto; flex-wrap: wrap; }
+  .daily-btn {
+    appearance: none; font-family: inherit; cursor: pointer; text-decoration: none;
+    border: 1px solid var(--line); border-radius: 999px;
+    background: rgba(255,255,255,0.04); color: var(--text);
+    font-size: 12.5px; letter-spacing: 1px; padding: 8px 18px;
+    transition: all .2s ease;
+  }
+  .daily-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); }
+  .daily-btn.primary { border-color: rgba(111,227,196,0.5); color: var(--accent); }
+  .daily-btn.primary:hover { background: rgba(111,227,196,0.12); }
+
+  /* 整点信标连闪 */
+  .topbar .beacon.chime { animation: beacon .38s ease-in-out 6; }
+
+  /* 深夜模式：背景更暗、更静 */
+  body.night #universe { opacity: 0.3; }
+  body.night .vignette {
+    background: radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,0.78) 100%);
+  }
+
+  /* 换频过渡效果 */
+  #tunefx {
+    position: fixed; inset: 0; z-index: 60; display: none;
+    flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    background: #04050a;
+  }
+  #tunefx.on { display: flex; }
+  #tunefx canvas { width: 100vw; height: 60vh; image-rendering: pixelated; opacity: 0.5; }
+  #tunefx .txt { font-size: 13px; letter-spacing: 8px; color: var(--accent); }
   .hero h1 {
     font-family: "Songti SC", "Noto Serif SC", "STSong", serif;
     font-size: clamp(40px, 7vw, 64px); font-weight: 700;
@@ -160,10 +215,26 @@
 
   <main>
     <section class="hero">
-      <div class="eyebrow">INDEX OF TRANSMISSIONS · <b>3 个频道在线</b></div>
+      <div class="eyebrow">INDEX OF TRANSMISSIONS · <b>4 个频道在线</b> · 每日更新信号</div>
       <h1>观 测 档 案</h1>
       <p>在噪声里寻找<b>信号</b>，在方程里寻找<b>生命</b>。<br>
       这里收录一些不可见世界的观测记录——它们都在运行中，随时可以调谐进入。</p>
+    </section>
+
+    <section class="daily" id="daily">
+      <div class="pane">
+        <canvas id="dailylife"></canvas>
+        <span class="lab">TODAY'S UNIVERSE · LIVE</span>
+      </div>
+      <div class="body">
+        <div class="head"><span class="beacon"></span>今日信号 · <b id="dailyDate">—</b></div>
+        <p class="note" id="dailyNote">—</p>
+        <div class="mix">今日声学配方：<b id="dailyMix">—</b></div>
+        <div class="actions">
+          <a class="daily-btn primary" id="dailyLifeLink">观测今日宇宙 →</a>
+          <a class="daily-btn" id="dailyMixLink">收听今日配方 →</a>
+        </div>
+      </div>
     </section>
 
     <section class="channels">
@@ -205,6 +276,19 @@
           <div class="desc">24 种本地合成的声源——白噪音到篝火、深空与蝉鸣，随意叠加，调一杯属于你的安静。</div>
         </div>
       </a>
+
+      <a class="card" href="https://rimutuyuannn-ai.github.io/orbit-garden/" id="card-orbit">
+        <div class="preview">
+          <canvas id="stars"></canvas>
+          <div class="tag"><i></i><span>ORBITAL MECHANICS</span></div>
+          <div class="scale"><span>r¹</span><span>r²</span><span>r³</span><span>r⁴</span><span>r⁵</span><span>∞</span></div>
+        </div>
+        <div class="info">
+          <div class="ch"><b>CH·04</b>　星图 / ORBIT GARDEN</div>
+          <h2>引力沙盒<span class="arrow">进入 →</span></h2>
+          <div class="desc">拖拽发射行星，绕恒星画出轨道彩带。共振、弹弓、双星——宇宙的规则只有引力一条。</div>
+        </div>
+      </a>
     </section>
   </main>
 
@@ -212,6 +296,11 @@
     <div>© 2026 <a href="https://github.com/rimutuyuannn-ai" target="_blank" rel="noopener">rimutuyuannn-ai</a> · 观测进行中</div>
     <div class="sig" id="uptime">SIGNAL OK</div>
   </footer>
+</div>
+
+<div id="tunefx">
+  <canvas id="tunecv" width="192" height="108"></canvas>
+  <div class="txt" id="tunetxt">调谐中</div>
 </div>
 
 <script>
@@ -455,12 +544,169 @@ function drawBars(t, glow) {
   }
 }
 
-/* ---------- UTC 钟 ---------- */
+/* ---------- 今日信号：日期种子 → 今日宇宙 + 声学配方 + 观测笔记 ---------- */
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+// 与 particle-life 完全同源的种子化基因组（保证两边生成同一个宇宙）
+function seededGenome(rnd) {
+  const n = 5, m = [];
+  for (let i = 0; i < n; i++) {
+    m.push([]);
+    for (let j = 0; j < n; j++)
+      m[i].push(Math.round((i === j ? 0.2 + rnd() * 0.35 : rnd() * 2 - 1) * 100) / 100);
+  }
+  const base = rnd() * 360, cols = [];
+  for (let i = 0; i < n; i++)
+    cols.push(hslHex((base + i * 72 + rnd() * 12) % 360, 88, 62));
+  return { m, cols };
+}
+function hslHex(h, s, l) {
+  const a = s / 100;
+  const c = (1 - Math.abs(2 * (l / 100) - 1)) * a;
+  const hp = h / 60, x = c * (1 - Math.abs(hp % 2 - 1));
+  let r = 0, g = 0, b = 0;
+  if (hp < 1) [r, g, b] = [c, x, 0]; else if (hp < 2) [r, g, b] = [x, c, 0];
+  else if (hp < 3) [r, g, b] = [0, c, x]; else if (hp < 4) [r, g, b] = [0, x, c];
+  else if (hp < 5) [r, g, b] = [x, 0, c]; else [r, g, b] = [c, 0, x];
+  const m = l / 100 - c / 2;
+  const to = v => Math.round((v + m) * 255).toString(16).padStart(2, "0");
+  return "#" + to(r) + to(g) + to(b);
+}
+const NOTES = [
+  "今晚噪声比信号多，但噪声也是一种陪伴。",
+  "第三频段的静电里，好像有谁在敲门。",
+  "培养皿里的细胞今晚格外活跃。",
+  "宇宙没有义务让你看懂，但它一直在运行。",
+  "深空的嗡鸣比昨天低了半个音。",
+  "雨落在不存在的地方。",
+  "所有轨道终将闭合，或逃逸，没有第三种结局。",
+  "信号很弱，但方向是对的。",
+  "今晚适合把音量调小一点。",
+  "噪声的平均值是寂静，生命的平均值是尘埃。",
+  "观察者效应：你看它的时候，它也在看你。",
+  "把今天调成一个频道，明天换成另一个。",
+  "恒星不眨眼，眨眼的是大气和你。",
+  "今天的风，绕了半个星球才到这里。",
+];
+const MIX_IDS = ["white","pink","brown","blue","violet","grey","rain","thunder","ocean","stream",
+  "wind","leaves","campfire","drips","heartbeat","fan","deepspace","steamship","static","vinyl",
+  "cicadas","crickets","airplane","breathing"];
+const MIX_NAMES = { white:"白噪音", pink:"粉噪音", brown:"棕噪音", blue:"蓝噪音", violet:"紫噪音",
+  grey:"灰噪音", rain:"细雨", thunder:"远雷", ocean:"海浪", stream:"溪流", wind:"夜风",
+  leaves:"叶浪", campfire:"篝火", drips:"洞穴水滴", heartbeat:"心跳", fan:"风扇",
+  deepspace:"深空", steamship:"轮船", static:"静电", vinyl:"黑胶", cicadas:"蝉鸣",
+  crickets:"夜虫", airplane:"客舱", breathing:"呼吸" };
+
+const today = new Date();
+const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
+const dayRnd = mulberry32(parseInt(seedStr, 10));
+const { m: dailyMatrix, cols: dailyColors } = seededGenome(dayRnd);
+
+// 今日配方（消耗同一随机流的后续数字）
+const mixCount = 2 + Math.floor(dayRnd() * 2);
+const mixPicks = [];
+while (mixPicks.length < mixCount) {
+  const id = MIX_IDS[Math.floor(dayRnd() * MIX_IDS.length)];
+  if (!mixPicks.some(p => p.id === id)) mixPicks.push({ id, vol: (0.5 + dayRnd() * 0.5).toFixed(1) });
+}
+const mixStr = mixPicks.map(p => `${p.id}:${p.vol}`).join(",");
+const WEEK = ["日", "一", "二", "三", "四", "五", "六"];
+
+document.getElementById("dailyDate").textContent =
+  `${seedStr.slice(0,4)}-${seedStr.slice(4,6)}-${seedStr.slice(6,8)} · 周${WEEK[today.getDay()]}`;
+document.getElementById("dailyNote").textContent = NOTES[Math.floor(dayRnd() * NOTES.length)];
+document.getElementById("dailyMix").textContent = mixPicks.map(p => MIX_NAMES[p.id]).join(" × ");
+document.getElementById("dailyLifeLink").href =
+  `https://rimutuyuannn-ai.github.io/particle-life/?seed=${seedStr}`;
+document.getElementById("dailyMixLink").href =
+  `https://rimutuyuannn-ai.github.io/noise-room/?mix=${encodeURIComponent(mixStr)}`;
+
+/* 今日宇宙活预览：种子化迷你粒命 */
+const dailyCanvas = document.getElementById("dailylife");
+const dailyG = dailyCanvas.getContext("2d");
+const dailylife = createLife(dailyCanvas, {
+  count: 130, species: 5, rMax: 52, force: 0.55, friction: 0.85,
+  trail: 0.3, dotSize: 2.2, speedScale: 24,
+  colors: dailyColors,
+  matrix(m) { for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) m[i][j] = dailyMatrix[i][j]; },
+});
+const starsCanvas = document.getElementById("stars");
+const starsG = starsCanvas.getContext("2d");
+const starMiniSprite = makeGlowSprite("#ffd27a", 0.22);
+const planetMini = ["#6fe3c4", "#5a8dff", "#ff9a62", "#c792ff"].map(c => makeGlowSprite(c, 0.4));
+const miniOrbits = [
+  { r: 0.24, w: 1.00, ph: 0.0,  sz: 13 },
+  { r: 0.40, w: 0.52, ph: 2.1,  sz: 11 },
+  { r: 0.58, w: 0.34, ph: 4.0,  sz: 15 },
+  { r: 0.78, w: 0.22, ph: 5.3,  sz: 10 },
+];
+function makeGlowSprite(color, core) {
+  const s = 64, c = document.createElement("canvas");
+  c.width = c.height = s;
+  const g = c.getContext("2d");
+  const grad = g.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
+  const rgb = parseInt(color.slice(1,3),16) + "," + parseInt(color.slice(3,5),16) + "," + parseInt(color.slice(5,7),16);
+  grad.addColorStop(0, "rgba(255,255,255,0.95)");
+  grad.addColorStop(core, `rgba(${rgb},0.9)`);
+  grad.addColorStop(0.55, `rgba(${rgb},0.22)`);
+  grad.addColorStop(1, `rgba(${rgb},0)`);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, s, s);
+  return c;
+}
+function drawStars(t) {
+  const { w, h } = fitCanvas(starsCanvas);
+  const g = starsG;
+  g.fillStyle = "rgba(5, 7, 12, 0.10)";       // 长拖尾
+  g.fillRect(0, 0, w, h);
+  const cx = w / 2, cy = h / 2, R = Math.min(w, h);
+  g.globalCompositeOperation = "lighter";
+  // 轨道虚线圈
+  g.strokeStyle = "rgba(255, 210, 122, 0.10)";
+  g.lineWidth = 1;
+  g.setLineDash([3, 5]);
+  for (const o of miniOrbits) {
+    g.beginPath();
+    g.arc(cx, cy, o.r * R, 0, Math.PI * 2);
+    g.stroke();
+  }
+  g.setLineDash([]);
+  // 恒星
+  const pulse = 46 + Math.sin(t * 1.6) * 4;
+  g.drawImage(starMiniSprite, cx - pulse/2, cy - pulse/2, pulse, pulse);
+  // 行星
+  miniOrbits.forEach((o, i) => {
+    const a = t * o.w + o.ph;
+    const x = cx + Math.cos(a) * o.r * R, y = cy + Math.sin(a) * o.r * R * 0.72;
+    g.drawImage(planetMini[i], x - o.sz/2, y - o.sz/2, o.sz, o.sz);
+  });
+  g.globalCompositeOperation = "source-over";
+}
+
+/* ---------- UTC 钟 + 整点信标 + 深夜模式 ---------- */
 const clockEl = document.getElementById("clock");
+const beaconEl = document.querySelector(".topbar .beacon");
+let chimedHour = -1;
 function tickClock() {
   const d = new Date();
   const p = n => String(n).padStart(2, "0");
   clockEl.textContent = `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+  // 整点：信标连闪六下
+  if (d.getMinutes() === 0 && chimedHour !== d.getHours()) {
+    chimedHour = d.getHours();
+    beaconEl.classList.remove("chime");
+    void beaconEl.offsetWidth;           // 重置动画
+    beaconEl.classList.add("chime");
+  }
+  // 深夜模式（本地时间 23:00–06:00）
+  const h = d.getHours();
+  document.body.classList.toggle("night", h >= 23 || h < 6);
 }
 tickClock();
 setInterval(tickClock, 1000);
@@ -498,6 +744,8 @@ function renderAll(now) {
   drawScope(t, nightHover.v);
   minilife.frame(lifeG, lifeHover.v);
   drawBars(t, noiseHover.v);
+  drawStars(t);
+  dailylife.frame(dailyG, 0, 1);
 }
 function loop(now) {
   if (!running) return;
@@ -536,6 +784,68 @@ if (reduced) {
 window.addEventListener("resize", () => {
   universe.frame(bgG, 0, 1);
   minilife.frame(lifeG, 0);
+});
+
+/* ---------- 调谐进入：键盘 1-4 / 卡片点击 → 静电换频过渡 ---------- */
+const CHANNELS = [
+  "https://rimutuyuannn-ai.github.io/night-signals/",
+  "https://rimutuyuannn-ai.github.io/particle-life/",
+  "https://rimutuyuannn-ai.github.io/noise-room/",
+  "https://rimutuyuannn-ai.github.io/orbit-garden/",
+];
+const CHANNEL_TAGS = ["CH·01 NIGHT SIGNALS", "CH·02 粒 命", "CH·03 静噪室", "CH·04 星 图"];
+const tunefx = document.getElementById("tunefx");
+const tunecv = document.getElementById("tunecv");
+const tunetxt = document.getElementById("tunetxt");
+const tuneG = tunecv.getContext("2d");
+let tuning = false;
+function staticNoise() {
+  for (let i = 0; i < 130; i++) {
+    const v = Math.random() * 200 | 0;
+    tuneG.fillStyle = `rgba(${v},${v},${v},${0.25 + Math.random() * 0.5})`;
+    tuneG.fillRect(Math.random() * 192 | 0, Math.random() * 108 | 0, 2 + Math.random() * 7, 1 + Math.random() * 2);
+  }
+}
+function tuneTo(idx, url) {
+  if (tuning || idx < 0 || idx >= CHANNELS.length) return;
+  tuning = true;
+  tunetxt.textContent = CHANNEL_TAGS[idx] + " · 调谐中";
+  tunefx.classList.add("on");
+  stopLoop();
+  const iv = setInterval(staticNoise, 45);
+  setTimeout(() => { clearInterval(iv); location.href = url; }, 340);
+}
+document.addEventListener("keydown", e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA") return;
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 4) tuneTo(n - 1, CHANNELS[n - 1]);
+});
+document.querySelectorAll(".card").forEach(a => {
+  a.addEventListener("click", e => {
+    e.preventDefault();
+    const idx = CHANNELS.indexOf(a.href);
+    tuneTo(idx, a.href);
+  });
+});
+document.getElementById("dailyLifeLink").addEventListener("click", e => {
+  e.preventDefault();
+  tuning = false;
+  tunetxt.textContent = "今日宇宙 · 调谐中";
+  tunefx.classList.add("on");
+  stopLoop();
+  const iv = setInterval(staticNoise, 45);
+  setTimeout(() => { clearInterval(iv); location.href = e.currentTarget.href; }, 340);
+});
+document.getElementById("dailyMixLink").addEventListener("click", e => {
+  e.preventDefault();
+  tuning = false;
+  tunetxt.textContent = "今日配方 · 调谐中";
+  tunefx.classList.add("on");
+  stopLoop();
+  const iv = setInterval(staticNoise, 45);
+  setTimeout(() => { clearInterval(iv); location.href = e.currentTarget.href; }, 340);
 });
 </script>
 </body>
