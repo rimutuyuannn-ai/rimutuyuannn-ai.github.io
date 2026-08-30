@@ -32,7 +32,7 @@
   #universe {
     position: fixed; inset: 0; z-index: 0;
     width: 100vw; height: 100vh;
-    opacity: 0.55; pointer-events: none;
+    pointer-events: none;
   }
   .vignette {
     position: fixed; inset: 0; z-index: 1; pointer-events: none;
@@ -462,15 +462,119 @@ const minilife = createLife(lifeCanvas, {
   },
 });
 
-/* ---------- 全屏背景宇宙：更暗、更慢 ---------- */
+/* ---------- 全屏夜空：星子明灭 · 流星偶过 · 远恒星闪烁 · 浅星云 ---------- */
 const bgCanvas = document.getElementById("universe");
 const bgG = bgCanvas.getContext("2d");
-const universe = createLife(bgCanvas, {
-  count: 150, species: 4, rMax: 110, force: 0.3, friction: 0.9,
-  trail: 0.18, dotSize: 1.8, speedScale: 14,
-  colors: ["#2e6f63", "#3a4f86", "#6d5a35", "#3a5570"],
-  bgScale: 1,   // 背景层用 1x 分辨率：它在暗处且被暗角覆盖，视觉无损但省 4 倍像素
-});
+
+// 星云：预渲染到离屏画布（每帧只做一次 drawImage，极浅，不与主题争）
+const nebulaCv = document.createElement("canvas");
+nebulaCv.width = 1600; nebulaCv.height = 1000;
+(function paintNebula() {
+  const g = nebulaCv.getContext("2d");
+  for (const b of [
+    { x: 0.22, y: 0.30, r: 430, c: "58,120,140" },   // 青
+    { x: 0.80, y: 0.66, r: 540, c: "62,82,140" },    // 靛
+    { x: 0.56, y: 0.14, r: 300, c: "108,92,148" },   // 紫，最浅
+  ]) {
+    const grad = g.createRadialGradient(b.x * 1600, b.y * 1000, 0, b.x * 1600, b.y * 1000, b.r);
+    grad.addColorStop(0, `rgba(${b.c},0.055)`);
+    grad.addColorStop(1, `rgba(${b.c},0)`);
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 1600, 1000);
+  }
+})();
+
+// 远恒星的十字光芒贴图
+const flareSpr = (() => {
+  const c = document.createElement("canvas"); c.width = c.height = 64;
+  const g = c.getContext("2d"), cx = 32;
+  const rg = g.createRadialGradient(cx, cx, 0, cx, cx, 8);
+  rg.addColorStop(0, "rgba(235,242,250,0.95)");
+  rg.addColorStop(1, "rgba(235,242,250,0)");
+  g.fillStyle = rg; g.fillRect(0, 0, 64, 64);
+  g.globalCompositeOperation = "lighter";
+  for (const [dx, dy] of [[1, 0], [0, 1]]) {
+    const lg = g.createLinearGradient(cx - dx * 26, cx - dy * 26, cx + dx * 26, cx + dy * 26);
+    lg.addColorStop(0, "rgba(200,220,245,0)");
+    lg.addColorStop(0.5, "rgba(200,220,245,0.5)");
+    lg.addColorStop(1, "rgba(200,220,245,0)");
+    g.fillStyle = lg;
+    if (dx) g.fillRect(6, cx - 0.7, 52, 1.4); else g.fillRect(cx - 0.7, 6, 1.4, 52);
+  }
+  return c;
+})();
+
+// 三层星：碎星 / 小星 / 远恒星（带光芒、闪烁更明显）
+const stars = [];
+(function seedStars() {
+  const push = (n, cfg) => { for (let i = 0; i < n; i++) stars.push({
+    x: Math.random(), y: Math.random(),
+    r: cfg.r0 + Math.random() * cfg.r1,
+    base: cfg.b0 + Math.random() * cfg.b1,
+    amp: cfg.a0 + Math.random() * cfg.a1,
+    sp: cfg.s0 + Math.random() * cfg.s1,
+    ph: Math.random() * 6.28, big: cfg.big || 0,
+  }); };
+  push(95, { r0: 0.5, r1: 0.9, b0: 0.14, b1: 0.28, a0: 0.08, a1: 0.18, s0: 0.4, s1: 1.2 });
+  push(32, { r0: 1.0, r1: 0.8, b0: 0.28, b1: 0.28, a0: 0.14, a1: 0.22, s0: 0.5, s1: 1.4 });
+  push(11, { r0: 1.7, r1: 1.1, b0: 0.48, b1: 0.22, a0: 0.20, a1: 0.28, s0: 0.8, s1: 1.8, big: 1 });
+})();
+
+const meteors = [];
+let nextMeteor = 3, lastSkyT = 0;
+function drawSky(t) {
+  const dt = Math.min(0.12, Math.max(0, t - lastSkyT));
+  lastSkyT = t;
+  const { w, h } = fitCanvas(bgCanvas, 1);
+  bgG.fillStyle = "#04050a";
+  bgG.fillRect(0, 0, w, h);
+  // 星云（近乎不动的漂移）
+  bgG.drawImage(nebulaCv,
+    Math.sin(t * 0.008) * 22 - 100, Math.cos(t * 0.006) * 14 - 60, w + 200, h + 120);
+  // 星子明灭
+  for (const st of stars) {
+    const a = st.base + st.amp * (0.5 + 0.5 * Math.sin(t * st.sp + st.ph));
+    if (st.big) {
+      const sz = st.r * 9;
+      bgG.globalAlpha = a * 0.9;
+      bgG.drawImage(flareSpr, st.x * w - sz / 2, st.y * h - sz / 2, sz, sz);
+    } else {
+      bgG.globalAlpha = a;
+      bgG.fillStyle = "#cfd9e8";
+      bgG.fillRect(st.x * w - st.r / 2, st.y * h - st.r / 2, st.r, st.r);
+    }
+  }
+  bgG.globalAlpha = 1;
+  // 流星偶过
+  if (!reduced) {
+    nextMeteor -= dt;
+    if (nextMeteor <= 0) {
+      nextMeteor = 6 + Math.random() * 14;
+      const ang = (18 + Math.random() * 30) * Math.PI / 180;
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      meteors.push({
+        x: w * 0.05 + Math.random() * w * 0.9, y: -20 + Math.random() * h * 0.25,
+        vx: Math.cos(ang) * 950 * dir, vy: Math.sin(ang) * 950,
+        len: 90 + Math.random() * 110,
+      });
+    }
+    for (let i = meteors.length - 1; i >= 0; i--) {
+      const m = meteors[i];
+      m.x += m.vx * dt; m.y += m.vy * dt;
+      const sp = Math.hypot(m.vx, m.vy), ux = m.vx / sp, uy = m.vy / sp;
+      const grad = bgG.createLinearGradient(m.x, m.y, m.x - ux * m.len, m.y - uy * m.len);
+      grad.addColorStop(0, "rgba(222,236,255,0.7)");
+      grad.addColorStop(1, "rgba(222,236,255,0)");
+      bgG.strokeStyle = grad;
+      bgG.lineWidth = 1.4;
+      bgG.beginPath();
+      bgG.moveTo(m.x, m.y);
+      bgG.lineTo(m.x - ux * m.len, m.y - uy * m.len);
+      bgG.stroke();
+      if (m.x < -220 || m.x > w + 220 || m.y > h + 90) meteors.splice(i, 1);
+    }
+  }
+}
 
 /* ---------- CH·01 示波器 ---------- */
 const scopeCanvas = document.getElementById("scope");
@@ -760,7 +864,7 @@ function renderAll(now) {
   nightHover.v += (glow.night - nightHover.v) * 0.08;
   lifeHover.v += (glow.life - lifeHover.v) * 0.08;
   noiseHover.v += (glow.noise - noiseHover.v) * 0.08;
-  if (!degraded) universe.frame(bgG, 0, 1);
+  if (!degraded) drawSky(t);
   drawScope(t, nightHover.v);
   minilife.frame(lifeG, lifeHover.v);
   drawBars(t, noiseHover.v);
@@ -802,7 +906,7 @@ if (reduced) {
 }
 
 window.addEventListener("resize", () => {
-  universe.frame(bgG, 0, 1);
+  drawSky(lastSkyT);
   minilife.frame(lifeG, 0);
 });
 
