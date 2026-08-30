@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="在噪声里寻找信号，在方程里寻找生命。Observations of invisible worlds.">
+<title>观测站 · rimutuyuannn-ai</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+<style>
+  :root {
+    --bg: #04050a;
+    --panel: rgba(13, 16, 25, 0.72);
+    --line: rgba(255, 255, 255, 0.09);
+    --text: #d8dee9;
+    --dim: #7b8494;
+    --accent: #6fe3c4;
+    --scope: #58e6a8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { height: 100%; }
+  body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* 全屏粒子宇宙背景 */
+  #universe {
+    position: fixed; inset: 0; z-index: 0;
+    opacity: 0.55; pointer-events: none;
+  }
+  .vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,0.6) 100%);
+  }
+  .wrap { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* 仪器感顶栏 */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(6, 8, 13, 0.55);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    font-size: 12px; letter-spacing: 3px; color: var(--dim);
+  }
+  .topbar .brand { display: flex; align-items: center; gap: 10px; }
+  .topbar .beacon {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 12px var(--accent);
+    animation: beacon 2.4s ease-in-out infinite;
+  }
+  @keyframes beacon { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+  .utc { font-variant-numeric: tabular-nums; display: flex; gap: 8px; align-items: baseline; }
+  .utc span { color: #556072; }
+  .utc time { color: #a8b4c6; }
+
+  /* 主体 */
+  main { flex: 1; width: min(920px, calc(100% - 48px)); margin: 0 auto; padding: 64px 0 48px; }
+  .hero { margin-bottom: 56px; }
+  .hero .eyebrow {
+    font-size: 12px; letter-spacing: 6px; color: var(--dim); margin-bottom: 18px;
+  }
+  .hero .eyebrow b { color: var(--accent); font-weight: 500; }
+  .hero h1 {
+    font-family: "Songti SC", "Noto Serif SC", "STSong", serif;
+    font-size: clamp(40px, 7vw, 64px); font-weight: 700;
+    letter-spacing: 14px; line-height: 1.1;
+    background: linear-gradient(100deg, #e8f4ff 20%, #6fe3c4 60%, #8fb8ff 90%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p {
+    margin-top: 20px; font-size: 15px; line-height: 1.9;
+    color: #9aa5b8; letter-spacing: 1px; max-width: 560px;
+  }
+  .hero p b { color: #c3cddd; font-weight: 500; }
+
+  /* 频道卡片 */
+  .channels {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 22px;
+  }
+  .card {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+    overflow: hidden; position: relative;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+    transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+  }
+  .card:hover {
+    border-color: rgba(111, 227, 196, 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 14px 52px rgba(0,0,0,0.6), 0 0 0 1px rgba(111,227,196,0.12);
+  }
+  .preview { position: relative; aspect-ratio: 16 / 9; background: #05070c; }
+  .preview canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .preview .tag {
+    position: absolute; top: 12px; left: 14px;
+    font-size: 10px; letter-spacing: 2px; color: #9aa5b8;
+    background: rgba(5, 7, 12, 0.6); border: 1px solid var(--line);
+    padding: 3px 9px; border-radius: 999px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .preview .tag i {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+    animation: beacon 2s ease-in-out infinite;
+  }
+  .preview .scale {
+    position: absolute; bottom: 8px; left: 0; right: 0;
+    display: flex; justify-content: space-between; padding: 0 14px;
+    font-size: 9px; color: #5b6578; letter-spacing: 1px;
+    font-variant-numeric: tabular-nums; pointer-events: none;
+  }
+  .card .info { padding: 18px 20px 20px; border-top: 1px solid var(--line); }
+  .card .ch { font-size: 11px; letter-spacing: 3px; color: var(--dim); margin-bottom: 8px; }
+  .card .ch b { color: var(--accent); font-weight: 500; }
+  .card h2 {
+    font-size: 19px; letter-spacing: 2px; font-weight: 600; color: #e6ebf3;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  }
+  .card h2 .arrow {
+    font-size: 14px; color: var(--accent); letter-spacing: 0;
+    transition: transform .25s ease; white-space: nowrap; font-weight: 400;
+  }
+  .card:hover h2 .arrow { transform: translateX(5px); }
+  .card .desc { margin-top: 9px; font-size: 13px; line-height: 1.75; color: #8d97a9; letter-spacing: 0.5px; }
+
+  /* 页脚 */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 20px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: var(--dim); letter-spacing: 1px;
+    background: rgba(6, 8, 13, 0.5);
+  }
+  footer a { color: #a8b4c6; text-decoration: none; border-bottom: 1px dotted #4a5468; }
+  footer a:hover { color: var(--accent); border-color: var(--accent); }
+  footer .sig { font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 760px) {
+    .channels { grid-template-columns: 1fr; }
+    main { padding-top: 44px; }
+    .hero h1 { letter-spacing: 8px; }
+    .utc span { display: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="universe"></canvas>
+<div class="vignette"></div>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><span class="beacon"></span>OBSERVATORY</div>
+    <div class="utc"><span>UTC</span><time id="clock">--:--:--</time></div>
+  </div>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">INDEX OF TRANSMISSIONS · <b>3 个频道在线</b></div>
+      <h1>观 测 档 案</h1>
+      <p>在噪声里寻找<b>信号</b>，在方程里寻找<b>生命</b>。<br>
+      这里收录一些不可见世界的观测记录——它们都在运行中，随时可以调谐进入。</p>
+    </section>
+
+    <section class="channels">
+      <a class="card" href="https://rimutuyuannn-ai.github.io/night-signals/" id="card-night">
+        <div class="preview">
+          <canvas id="scope"></canvas>
+          <div class="tag"><i></i><span id="scope-state">STANDBY</span></div>
+          <div class="scale"><span>3</span><span>8</span><span>13</span><span>19</span><span>24</span><span>30</span></div>
+        </div>
+        <div class="info">
+          <div class="ch"><b>CH·01</b>　NIGHT SIGNALS / 深夜短波</div>
+          <h2>不可能之地的收音机<span class="arrow">进入 →</span></h2>
+          <div class="desc">一台为不存在的地方准备的短波接收机。频谱、波段、深夜的静电噪声。</div>
+        </div>
+      </a>
+
+      <a class="card" href="https://rimutuyuannn-ai.github.io/particle-life/" id="card-life">
+        <div class="preview">
+          <canvas id="minilife"></canvas>
+          <div class="tag"><i></i><span>LIVE CULTURE</span></div>
+          <div class="scale"><span>0</span><span>β</span><span>r</span><span>F</span><span>v</span><span>∞</span></div>
+        </div>
+        <div class="info">
+          <div class="ch"><b>CH·02</b>　粒命 / PARTICLE LIFE</div>
+          <h2>数字生命培养皿<span class="arrow">进入 →</span></h2>
+          <div class="desc">一张相生相克的基因图谱，1500 个粒子。细胞、蛇链与猎食者都会自己长出来。</div>
+        </div>
+      </a>
+
+      <a class="card" href="https://rimutuyuannn-ai.github.io/noise-room/" id="card-noise">
+        <div class="preview">
+          <canvas id="bars"></canvas>
+          <div class="tag"><i></i><span>24 SOURCES · ON TAP</span></div>
+          <div class="scale"><span>20</span><span>100</span><span>1k</span><span>5k</span><span>10k</span><span>20k</span></div>
+        </div>
+        <div class="info">
+          <div class="ch"><b>CH·03</b>　静噪室 / NOISE ROOM</div>
+          <h2>白噪音调配台<span class="arrow">进入 →</span></h2>
+          <div class="desc">24 种本地合成的声源——白噪音到篝火、深空与蝉鸣，随意叠加，调一杯属于你的安静。</div>
+        </div>
+      </a>
+    </section>
+  </main>
+
+  <footer>
+    <div>© 2026 <a href="https://github.com/rimutuyuannn-ai" target="_blank" rel="noopener">rimutuyuannn-ai</a> · 观测进行中</div>
+    <div class="sig" id="uptime">SIGNAL OK</div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   观测站 · Observatory
+   三块活画布：全屏粒子宇宙 / CH·01 示波器 / CH·02 迷你粒命
+   ============================================================ */
+const dpr = Math.min(window.devicePixelRatio || 1, 2);
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function fitCanvas(cv) {
+  const r = cv.getBoundingClientRect();
+  const w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
+  if (cv.width !== w * dpr || cv.height !== h * dpr) {
+    cv.width = w * dpr; cv.height = h * dpr;
+    cv.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  return { w, h };
+}
+
+/* ---------- 共用：迷你 particle-life 引擎 ---------- */
+function createLife(cv, opts) {
+  const o = Object.assign({
+    count: 200, species: 3, rMax: 44, dt: 0.02, beta: 0.3,
+    friction: 0.86, force: 0.5, dotSize: 2.2, trail: 0.26, speedScale: 30,
+  }, opts);
+  let W = 1, H = 1, t = null;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const colors = o.colors;
+
+  function init() {
+    const m = [];
+    for (let i = 0; i < o.species; i++) {
+      m.push([]);
+      for (let j = 0; j < o.species; j++)
+        m[i].push(i === j ? rnd(0.2, 0.4) : (Math.random() < 0.5 ? -1 : 1) * rnd(0.2, 0.8));
+    }
+    if (o.matrix) o.matrix(m);
+    t = {
+      m,
+      x: new Float32Array(o.count), y: new Float32Array(o.count),
+      vx: new Float32Array(o.count), vy: new Float32Array(o.count),
+      s: new Uint8Array(o.count),
+    };
+    for (let i = 0; i < o.count; i++) {
+      t.x[i] = Math.random() * W; t.y[i] = Math.random() * H;
+      t.s[i] = Math.floor(Math.random() * o.species);
+    }
+  }
+
+  const heads = new Int32Array(1 << 14), nxt = new Int32Array(o.count);
+
+  function step() {
+    const cell = o.rMax;
+    const cols = Math.max(1, Math.ceil(W / cell)), rows = Math.max(1, Math.ceil(H / cell));
+    heads.fill(-1, 0, cols * rows);
+    for (let i = 0; i < o.count; i++) {
+      const cx = Math.min(cols - 1, Math.max(0, (t.x[i] / cell) | 0));
+      const cy = Math.min(rows - 1, Math.max(0, (t.y[i] / cell) | 0));
+      const k = cy * cols + cx; nxt[i] = heads[k]; heads[k] = i;
+    }
+    const r2max = o.rMax * o.rMax, hw = W / 2, hh = H / 2, K = o.rMax * o.force;
+    for (let i = 0; i < o.count; i++) {
+      const xi = t.x[i], yi = t.y[i], mi = t.m[t.s[i]];
+      let fx = 0, fy = 0;
+      const cx = Math.min(cols - 1, Math.max(0, (xi / cell) | 0));
+      const cy = Math.min(rows - 1, Math.max(0, (yi / cell) | 0));
+      for (let oy = -1; oy <= 1; oy++) {
+        const gy = (cy + oy + rows) % rows;
+        for (let ox = -1; ox <= 1; ox++) {
+          const gx = (cx + ox + cols) % cols;
+          for (let j = heads[gy * cols + gx]; j !== -1; j = nxt[j]) {
+            if (j === i) continue;
+            let dx = xi - t.x[j], dy = yi - t.y[j];
+            if (dx > hw) dx -= W; else if (dx < -hw) dx += W;
+            if (dy > hh) dy -= H; else if (dy < -hh) dy += H;
+            const r2 = dx * dx + dy * dy;
+            if (r2 < r2max && r2 > 1e-6) {
+              const r = Math.sqrt(r2), rN = r / o.rMax;
+              const f = rN < o.beta
+                ? rN / o.beta - 1
+                : mi[t.s[j]] * (1 - Math.abs(2 * rN - 1 - o.beta) / (1 - o.beta));
+              fx += dx / r * f; fy += dy / r * f;
+            }
+          }
+        }
+      }
+      t.vx[i] = (t.vx[i] + fx * K * o.dt) * o.friction;
+      t.vy[i] = (t.vy[i] + fy * K * o.dt) * o.friction;
+    }
+    for (let i = 0; i < o.count; i++) {
+      t.x[i] = (t.x[i] + t.vx[i] * o.dt * o.speedScale + W) % W;
+      t.y[i] = (t.y[i] + t.vy[i] * o.dt * o.speedScale + H) % H;
+    }
+  }
+
+  function render(g, glow) {
+    g.globalCompositeOperation = "source-over";
+    g.fillStyle = `rgba(5, 7, 12, ${o.trail})`;
+    g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = "lighter";
+    const s = o.dotSize, a = 0.5 + glow * 0.5;
+    for (let i = 0; i < o.count; i++) {
+      g.globalAlpha = a;
+      g.fillStyle = colors[t.s[i]];
+      g.fillRect(t.x[i] - s / 2, t.y[i] - s / 2, s, s);
+    }
+    g.globalAlpha = 1;
+    g.globalCompositeOperation = "source-over";
+  }
+
+  return {
+    frame(g, glow) {
+      const { w, h } = fitCanvas(cv);
+      const fresh = W !== w || H !== h;
+      W = w; H = h;
+      if (!t || fresh) init();
+      step();
+      render(g, glow);
+    },
+  };
+}
+
+/* ---------- CH·02 迷你粒命：三物种追逐环 ---------- */
+const lifeCanvas = document.getElementById("minilife");
+const lifeG = lifeCanvas.getContext("2d");
+const minilife = createLife(lifeCanvas, {
+  count: 260, species: 3, rMax: 46, force: 0.55, friction: 0.85, trail: 0.3,
+  colors: ["#3ddc9a", "#5a8dff", "#ffb03c"],
+  // 环形追逐 + 各自抱团：链与细胞壁的配方
+  matrix(m) {
+    m[0][1] = 0.8;  m[1][2] = 0.8;  m[2][0] = 0.8;
+    m[0][2] = -0.4; m[1][0] = -0.4; m[2][1] = -0.4;
+    for (let i = 0; i < 3; i++) m[i][i] = 0.35;
+  },
+});
+
+/* ---------- 全屏背景宇宙：更暗、更慢 ---------- */
+const bgCanvas = document.getElementById("universe");
+const bgG = bgCanvas.getContext("2d");
+const universe = createLife(bgCanvas, {
+  count: 150, species: 4, rMax: 110, force: 0.3, friction: 0.9,
+  trail: 0.18, dotSize: 1.8, speedScale: 14,
+  colors: ["#2e6f63", "#3a4f86", "#6d5a35", "#3a5570"],
+});
+
+/* ---------- CH·01 示波器 ---------- */
+const scopeCanvas = document.getElementById("scope");
+const scopeG = scopeCanvas.getContext("2d");
+let scopeGlow = 0;
+const scopeState = document.getElementById("scope-state");
+
+function drawScope(t, glow) {
+  const { w, h } = fitCanvas(scopeCanvas);
+  const g = scopeG;
+  g.globalCompositeOperation = "source-over";
+  g.fillStyle = "rgba(5, 7, 12, 0.34)";
+  g.fillRect(0, 0, w, h);
+
+  // 示波器网格
+  g.strokeStyle = "rgba(88, 230, 168, 0.07)";
+  g.lineWidth = 1;
+  g.beginPath();
+  for (let x = 0.5; x < w; x += 28) { g.moveTo(x, 0); g.lineTo(x, h); }
+  for (let y = 0.5; y < h; y += 24) { g.moveTo(0, y); g.lineTo(w, y); }
+  g.stroke();
+
+  // 波形：双正弦调制 + 噪声，悬停时振幅增强
+  const mid = h / 2;
+  const amp = (h * 0.22) * (0.75 + glow * 0.5);
+  g.globalCompositeOperation = "lighter";
+  for (const pass of [
+    { lw: 4, alpha: 0.10 + glow * 0.08 },
+    { lw: 1.4, alpha: 0.85 },
+  ]) {
+    g.strokeStyle = `rgba(88, 230, 168, ${pass.alpha})`;
+    g.lineWidth = pass.lw;
+    g.beginPath();
+    for (let x = 0; x <= w; x += 2) {
+      const env = Math.sin(x / w * Math.PI);
+      const y = mid
+        + Math.sin(x * 0.045 + t * 2.1) * amp * 0.55 * env
+        + Math.sin(x * 0.013 - t * 0.9) * amp * 0.45 * env
+        + (Math.random() - 0.5) * (2 + glow * 3);
+      x === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
+    }
+    g.stroke();
+  }
+
+  // 扫描亮柱
+  const sweep = ((t * 0.14) % 1) * w;
+  const grad = g.createLinearGradient(sweep - 46, 0, sweep + 46, 0);
+  grad.addColorStop(0, "rgba(88,230,168,0)");
+  grad.addColorStop(0.5, `rgba(88,230,168,${0.05 + glow * 0.06})`);
+  grad.addColorStop(1, "rgba(88,230,168,0)");
+  g.fillStyle = grad;
+  g.fillRect(sweep - 46, 0, 92, h);
+  g.globalCompositeOperation = "source-over";
+}
+
+/* ---------- CH·03 静噪室：噪声频谱条 ---------- */
+const barsCanvas = document.getElementById("bars");
+const barsG = barsCanvas.getContext("2d");
+const NBARS = 44;
+const barH = new Float32Array(NBARS).map(() => Math.random() * 0.3);
+const barV = new Float32Array(NBARS);
+
+function drawBars(t, glow) {
+  const { w, h } = fitCanvas(barsCanvas);
+  const g = barsG;
+  g.fillStyle = "rgba(5, 7, 12, 0.34)";
+  g.fillRect(0, 0, w, h);
+
+  // 底线
+  g.strokeStyle = "rgba(255, 184, 107, 0.18)";
+  g.lineWidth = 1;
+  g.beginPath(); g.moveTo(0, h - 8.5); g.lineTo(w, h - 8.5); g.stroke();
+
+  const bw = w / NBARS;
+  for (let i = 0; i < NBARS; i++) {
+    // 低频稳、高频抖：噪声频谱的形态
+    const wob = Math.sin(t * (1.1 + i * 0.05) + i * 1.7) * 0.5 + 0.5;
+    const noise = Math.random() * (0.12 + i / NBARS * 0.3);
+    const tilt = 1 - i / NBARS * 0.55;
+    const target = Math.min(1, (0.18 + wob * 0.45 + noise) * tilt * (0.7 + glow * 0.45));
+    barH[i] += (target - barH[i]) * 0.12;
+    barV[i] = barH[i] * (h - 26);
+    const bh = Math.max(2, barV[i]);
+    const alpha = 0.3 + 0.6 * barH[i];
+    g.fillStyle = `rgba(255, 184, 107, ${alpha})`;
+    g.fillRect(i * bw + 1.5, h - 9 - bh, bw - 3, bh);
+    // 顶部亮帽
+    g.fillStyle = `rgba(255, 220, 170, ${Math.min(1, alpha + 0.25)})`;
+    g.fillRect(i * bw + 1.5, h - 9 - bh, bw - 3, 1.5);
+  }
+}
+
+/* ---------- UTC 钟 ---------- */
+const clockEl = document.getElementById("clock");
+function tickClock() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  clockEl.textContent = `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+/* ---------- 悬停强度（缓动） ---------- */
+const glow = { night: 0, life: 0, noise: 0 };
+function watchHover(id, key) {
+  const el = document.getElementById(id);
+  el.addEventListener("mouseenter", () => {
+    glow[key] = 1;
+    if (key === "night") scopeState.textContent = "ON AIR";
+  });
+  el.addEventListener("mouseleave", () => {
+    glow[key] = 0;
+    if (key === "night") scopeState.textContent = "STANDBY";
+  });
+}
+watchHover("card-night", "night");
+watchHover("card-life", "life");
+watchHover("card-noise", "noise");
+const lifeHover = { v: 0 };
+const nightHover = { v: 0 };
+const noiseHover = { v: 0 };
+
+/* ---------- 主循环 ---------- */
+let t0 = performance.now();
+function loop(now) {
+  const t = (now - t0) / 1000;
+  nightHover.v += (glow.night - nightHover.v) * 0.08;
+  lifeHover.v += (glow.life - lifeHover.v) * 0.08;
+  noiseHover.v += (glow.noise - noiseHover.v) * 0.08;
+  universe.frame(bgG, 0);
+  drawScope(t, nightHover.v);
+  minilife.frame(lifeG, lifeHover.v);
+  drawBars(t, noiseHover.v);
+  if (!reduced) requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+if (reduced) { /* 静态单帧已绘制，尊重减弱动效偏好 */ }
+
+window.addEventListener("resize", () => {
+  universe.frame(bgG, 0);
+  minilife.frame(lifeG, 0);
+});
+</script>
+</body>
+</html>
