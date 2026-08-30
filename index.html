@@ -67,41 +67,32 @@
   }
   .hero .eyebrow b { color: var(--accent); font-weight: 500; }
 
-  /* 今日信号 */
+  /* 今日信号：一件小仪器，不设边框 */
   .daily {
-    display: flex; gap: 22px; align-items: stretch;
-    background: rgba(11, 14, 22, 0.88);
-    border: 1px solid rgba(111, 227, 196, 0.3); border-radius: 16px;
-    padding: 16px; margin-bottom: 44px;
-    box-shadow: 0 8px 40px rgba(0,0,0,0.45), 0 0 30px rgba(111,227,196,0.05);
+    display: flex; gap: 26px; align-items: center;
+    padding: 6px 4px 10px; margin-bottom: 46px;
   }
-  .daily .pane { position: relative; flex: none; width: 218px; border-radius: 10px; overflow: hidden; background: #05070c; }
-  .daily .pane canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-  .daily .pane .lab {
-    position: absolute; left: 10px; bottom: 8px;
-    font-size: 9px; letter-spacing: 2px; color: #7b8494; pointer-events: none;
+  .daily canvas { flex: none; width: 104px; height: 104px; }
+  .daily .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
+  .daily .almanac {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 11px; letter-spacing: 3px; color: var(--dim);
+    font-variant-numeric: tabular-nums;
   }
-  .daily .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; padding: 4px 2px; }
-  .daily .head { display: flex; align-items: center; gap: 9px; font-size: 12px; letter-spacing: 3px; color: var(--dim); }
-  .daily .head b { color: var(--accent); font-weight: 500; letter-spacing: 1px; }
-  .daily .head .beacon { width: 7px; height: 7px; }
+  .daily .almanac .beacon { width: 6px; height: 6px; }
   .daily .note {
     font-family: "Songti SC", "Noto Serif SC", serif;
-    font-size: 19px; letter-spacing: 1px; color: #dfe5ee; line-height: 1.55;
+    font-size: 21px; letter-spacing: 1.5px; color: #e6ebf3; line-height: 1.5;
   }
-  .daily .mix { font-size: 12.5px; color: #8d97a9; letter-spacing: 1px; }
-  .daily .mix b { color: #c3cddd; font-weight: 500; }
-  .daily .actions { display: flex; gap: 10px; margin-top: auto; flex-wrap: wrap; }
-  .daily-btn {
-    appearance: none; font-family: inherit; cursor: pointer; text-decoration: none;
-    border: 1px solid var(--line); border-radius: 999px;
-    background: rgba(255,255,255,0.04); color: var(--text);
-    font-size: 12.5px; letter-spacing: 1px; padding: 8px 18px;
-    transition: all .2s ease;
+  .daily .actions { display: flex; gap: 14px; align-items: baseline; }
+  .daily .actions a {
+    cursor: pointer; text-decoration: none;
+    font-size: 13px; letter-spacing: 2px; color: #a8b4c6;
+    border-bottom: 1px solid rgba(168,180,198,0.25);
+    padding-bottom: 2px; transition: color .2s, border-color .2s;
   }
-  .daily-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); }
-  .daily-btn.primary { border-color: rgba(111,227,196,0.5); color: var(--accent); }
-  .daily-btn.primary:hover { background: rgba(111,227,196,0.12); }
+  .daily .actions a:hover { color: var(--accent); border-color: rgba(111,227,196,0.6); }
+  .daily .actions .sep { color: #4a5468; font-size: 12px; }
 
   /* 整点信标连闪 */
   .topbar .beacon.chime { animation: beacon .38s ease-in-out 6; }
@@ -238,17 +229,12 @@
     </section>
 
     <section class="daily" id="daily">
-      <div class="pane">
-        <canvas id="dailylife"></canvas>
-        <span class="lab">TODAY'S UNIVERSE · LIVE</span>
-      </div>
+      <canvas id="dailymoon" width="128" height="128"></canvas>
       <div class="body">
-        <div class="head"><span class="beacon"></span>今日信号 · <b id="dailyDate">—</b></div>
+        <div class="almanac"><span class="beacon"></span><span id="dailyDate">—</span></div>
         <p class="note" id="dailyNote">—</p>
-        <div class="mix">今日空气：<b id="dailyMix">—</b></div>
         <div class="actions">
-          <a class="daily-btn primary" id="dailyLifeLink">今日宇宙 →</a>
-          <a class="daily-btn" id="dailyMixLink">今日空气 →</a>
+          <a id="dailyLifeLink">今日宇宙 →</a><span class="sep">·</span><a id="dailyMixLink">今日空气 →</a>
         </div>
       </div>
     </section>
@@ -817,24 +803,86 @@ while (mixPicks.length < mixCount) {
 const mixStr = mixPicks.map(p => `${p.id}:${p.vol}`).join(",");
 const WEEK = ["日", "一", "二", "三", "四", "五", "六"];
 
-document.getElementById("dailyDate").textContent =
-  `${seedStr.slice(0,4)}-${seedStr.slice(4,6)}-${seedStr.slice(6,8)} · 周${WEEK[today.getDay()]}`;
 document.getElementById("dailyNote").textContent = NOTES[Math.floor(dayRnd() * NOTES.length)];
-document.getElementById("dailyMix").textContent = mixPicks.map(p => MIX_NAMES[p.id]).join(" × ");
 document.getElementById("dailyLifeLink").href =
   `https://rimutuyuannn-ai.github.io/particle-life/?seed=${seedStr}`;
 document.getElementById("dailyMixLink").href =
   `https://rimutuyuannn-ai.github.io/noise-room/?mix=${encodeURIComponent(mixStr)}`;
 
-/* 今日宇宙活预览：种子化迷你粒命 */
-const dailyCanvas = document.getElementById("dailylife");
-const dailyG = dailyCanvas.getContext("2d");
-const dailylife = createLife(dailyCanvas, {
-  count: 130, species: 5, rMax: 52, force: 0.55, friction: 0.85,
-  trail: 0.3, dotSize: 2.2, speedScale: 24,
-  colors: dailyColors,
-  matrix(m) { for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) m[i][j] = dailyMatrix[i][j]; },
-});
+/* 今日月相：真实天文计算（朔望月 29.5306 天，历元 2000-01-06 18:14 UTC） */
+const SYNODIC = 29.530588853;
+const moonAge = (((today - Date.UTC(2000, 0, 6, 18, 14)) / 86400000) % SYNODIC + SYNODIC) % SYNODIC;
+const moonPh = moonAge / SYNODIC;                       // 0朔 … 0.5望 … 1朔
+const moonIllum = (1 - Math.cos(moonPh * Math.PI * 2)) / 2;
+const PHASE_NAME = ph =>
+  ph < 0.0337 || ph > 0.9663 ? "朔" :
+  ph < 0.2164 ? "娥眉月" : ph < 0.2836 ? "上弦月" : ph < 0.4665 ? "盈凸月" :
+  ph < 0.5335 ? "满月"   : ph < 0.7164 ? "亏凸月" : ph < 0.7836 ? "下弦月" : "残月";
+document.getElementById("dailyDate").textContent =
+  `${seedStr.slice(0,4)}-${seedStr.slice(4,6)}-${seedStr.slice(6,8)} · 周${WEEK[today.getDay()]}` +
+  ` · ${PHASE_NAME(moonPh)} · 月龄 ${moonAge.toFixed(1)} · 照度 ${(moonIllum * 100).toFixed(0)}%`;
+
+const moonCv = document.getElementById("dailymoon");
+const moonG = moonCv.getContext("2d");
+const craterRnd = mulberry32(parseInt(seedStr, 10) + 7);
+const craters = [];
+for (let k = 0; k < 7; k++)
+  craters.push({ x: (craterRnd() - 0.5) * 1.5, y: (craterRnd() - 0.5) * 1.5,
+                 r: 2 + craterRnd() * 4, a: 0.06 + craterRnd() * 0.09 });
+function drawDailyMoon(t) {
+  const g = moonG, dpr2 = Math.min(window.devicePixelRatio || 1, 2);
+  if (moonCv.width !== 128) { moonCv.width = moonCv.height = 128; }
+  g.clearRect(0, 0, 128, 128);
+  g.save();
+  g.translate(64, 64);
+  const breath = 1 + 0.007 * Math.sin(t * 0.5);         // 律动：呼吸
+  g.scale(breath, breath);
+  const R = 46, ph = moonPh, ang = ph * Math.PI * 2, waxing = ph < 0.5;
+  // 月晕
+  const halo = g.createRadialGradient(0, 0, R * 0.7, 0, 0, R + 16);
+  halo.addColorStop(0, "rgba(226,222,204,0.10)");
+  halo.addColorStop(1, "rgba(226,222,204,0)");
+  g.fillStyle = halo;
+  g.fillRect(-64, -64, 128, 128);
+  // 暗盘
+  g.fillStyle = "rgba(30,34,46,0.95)";
+  g.beginPath(); g.arc(0, 0, R, 0, 6.2832); g.fill();
+  // 亮面：亮侧外缘 + 明暗界线（椭圆弧）
+  const lit = g.createRadialGradient(waxing ? -R * 0.35 : R * 0.35, -R * 0.3, R * 0.1, 0, 0, R * 1.05);
+  lit.addColorStop(0, "#f2eee2");
+  lit.addColorStop(0.75, "#d6d0c0");
+  lit.addColorStop(1, "#a6a092");
+  g.fillStyle = lit;
+  g.beginPath();
+  g.arc(0, 0, R, -Math.PI / 2, Math.PI / 2, !waxing);
+  const rx = Math.max(0.001, Math.abs(R * Math.cos(ang)));
+  g.ellipse(0, 0, rx, R, 0, Math.PI / 2, -Math.PI / 2, Math.cos(ang) > 0);
+  g.fill();
+  // 环形山（种子化，只画在盘内）
+  g.save();
+  g.beginPath(); g.arc(0, 0, R - 0.5, 0, 6.2832); g.clip();
+  for (const c of craters) {
+    g.fillStyle = `rgba(10,12,18,${c.a})`;
+    g.beginPath(); g.arc(c.x * R * 0.8, c.y * R * 0.8, c.r, 0, 6.2832); g.fill();
+  }
+  g.restore();
+  g.restore();
+  // 月龄刻度环：朔 → 望 → 朔 的轨迹
+  const a0 = Math.PI * 0.75, span = Math.PI * 1.5;
+  g.strokeStyle = "rgba(140,160,190,0.18)";
+  g.lineWidth = 1;
+  g.beginPath(); g.arc(64, 64, 57, a0, a0 + span); g.stroke();
+  for (let k = 0; k <= 8; k++) {
+    const a = a0 + span * k / 8;
+    g.beginPath();
+    g.moveTo(64 + Math.cos(a) * 54.5, 64 + Math.sin(a) * 54.5);
+    g.lineTo(64 + Math.cos(a) * 59.5, 64 + Math.sin(a) * 59.5);
+    g.stroke();
+  }
+  const ma = a0 + span * ph;                            // 今夜月亮在环上的位置
+  g.fillStyle = "#e8e2d2";
+  g.beginPath(); g.arc(64 + Math.cos(ma) * 57, 64 + Math.sin(ma) * 57, 2, 0, 6.2832); g.fill();
+}
 const starsCanvas = document.getElementById("stars");
 const starsG = starsCanvas.getContext("2d");
 const starMiniSprite = makeGlowSprite("#ffd27a", 0.22);
@@ -944,7 +992,7 @@ function renderAll(now) {
   minilife.frame(lifeG, lifeHover.v);
   drawBars(t, noiseHover.v);
   drawStars(t);
-  dailylife.frame(dailyG, 0, 1);
+  drawDailyMoon(t);
 }
 function loop(now) {
   if (!running) return;
