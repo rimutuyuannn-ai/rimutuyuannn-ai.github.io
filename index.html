@@ -288,7 +288,7 @@
         <div class="info">
           <div class="ch"><b>CH·03</b>　静噪室 / NOISE ROOM</div>
           <h2>白噪音调配台<span class="arrow">进入 →</span></h2>
-          <div class="desc">24 种本地合成的声源——引力波、鲸落到篝火与蝉鸣，其中 13 个是为这座观测站发明的。</div>
+          <div class="desc">24 种本地合成的声源——从松山雨雾、雪落枫吟到引力波与星云圣咏，其中 20 个为观测站原创。</div>
         </div>
       </a>
 
@@ -612,14 +612,15 @@ const NOTES = [
   "恒星不眨眼，眨眼的是大气和你。",
   "今天的风，绕了半个星球才到这里。",
 ];
-const MIX_IDS = ["chirp","earthvein","whalefall","snowfall","aurora","glassrain","rain","thunder",
-  "ocean","stream","wind","leaves","campfire","drips","lighthouse","cloudwalk","deepspace",
-  "inkbloom","pulsar","vinyl","cicadas","firefly","shepard","nebula"];
-const MIX_NAMES = { chirp:"引力波", earthvein:"地脉", whalefall:"鲸落", snowfall:"雪落",
-  aurora:"极光", glassrain:"玻璃雨", rain:"细雨", thunder:"远雷", ocean:"海浪", stream:"溪流",
-  wind:"夜风", leaves:"叶浪", campfire:"篝火", drips:"洞穴水滴", lighthouse:"灯塔光束",
-  cloudwalk:"云端漫步", deepspace:"深空", inkbloom:"墨滴", pulsar:"脉冲星", vinyl:"黑胶",
-  cicadas:"蝉鸣", firefly:"萤火", shepard:"无尽阶", nebula:"星云圣咏" };
+const MIX_IDS = ["chirp","earthvein","fogbell","snowmaple","aurora","glassrain","pinemist",
+  "hollowthunder","ocean","stonespring","bamboowind","maple","hearth","mossdrips","lighthouse",
+  "cloudwalk","deepspace","inkbloom","pulsar","vinyl","cicadas","firefly","shepard","nebula"];
+const MIX_NAMES = { chirp:"引力波", earthvein:"地脉", fogbell:"雾海沉钟", snowmaple:"雪落枫吟",
+  aurora:"极光", glassrain:"玻璃雨", pinemist:"松山雨雾", hollowthunder:"空山远雷", ocean:"海浪",
+  stonespring:"石上清泉", bamboowind:"竹涧风", maple:"枫吟", hearth:"围炉煮雪",
+  mossdrips:"苔庭滴翠", lighthouse:"灯塔光束", cloudwalk:"云端漫步", deepspace:"深空",
+  inkbloom:"墨滴", pulsar:"脉冲星", vinyl:"黑胶", cicadas:"蝉鸣", firefly:"萤火",
+  shepard:"无尽阶", nebula:"星云圣咏" };
 
 const today = new Date();
 const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
